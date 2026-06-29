@@ -1,3 +1,7 @@
+import os
+
+os.system("playwright install chromium")
+
 import streamlit as st
 import plotly.express as px
 
