@@ -37,8 +37,7 @@ def get_html(search=None, url=None):
     with sync_playwright() as p:
 
         browser = p.chromium.launch(
-            headless=False,
-            slow_mo=200
+            headless=True
         )
 
         page = browser.new_page(
