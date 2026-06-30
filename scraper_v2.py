@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright
+import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from urllib.parse import quote
@@ -55,27 +56,12 @@ def get_html(search=None, url=None):
 
         try:
             page.goto(
-                target_url,
-                wait_until="domcontentloaded",
+                 target_url,
+                 wait_until="load",
                 timeout=120000,
             )
 
-            last_height = 0
-
-            for _ in range(15):
-                page.evaluate(
-                    "window.scrollBy(0, document.body.scrollHeight)"
-                )
-                page.wait_for_timeout(1500)
-
-                new_height = page.evaluate(
-                    "document.body.scrollHeight"
-                )
-
-                if new_height == last_height:
-                    break
-
-                last_height = new_height
+            print(page.title())
 
             html = page.content()
 
