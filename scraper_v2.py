@@ -12,15 +12,11 @@ def get_html(search=None, url=None):
     print("NEW SCRAPER LOADED")
 
     if url and url.strip():
-
         target_url = url.strip()
 
     elif search and search.strip():
-
         keyword = search.strip()
-
         slug = keyword.lower().replace(" ", "-")
-
         query = keyword.replace(" ", "+")
 
         target_url = (
@@ -29,7 +25,6 @@ def get_html(search=None, url=None):
         )
 
     else:
-
         target_url = BASE_URL
 
     print(target_url)
@@ -41,63 +36,55 @@ def get_html(search=None, url=None):
             args=[
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage"
-            ]
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+            ],
         )
 
         page = browser.new_page(
             viewport={
                 "width": 1366,
-                "height": 768
-            }
+                "height": 768,
+            },
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/137.0.0.0 Safari/537.36"
+            ),
         )
 
-        page.goto(
-            target_url,
-            wait_until="domcontentloaded",
-            timeout=120000
-        )
-
-        page.wait_for_timeout(5000)
-
-        last_height = 0
-
-        for _ in range(25):
-
-            page.mouse.wheel(0, 7000)
-
-            page.wait_for_timeout(1000)
-
-            new_height = page.evaluate(
-                "document.body.scrollHeight"
+        try:
+            page.goto(
+                target_url,
+                wait_until="domcontentloaded",
+                timeout=120000,
             )
 
-            if new_height == last_height:
-                break
+            last_height = 0
 
-            last_height = new_height
+            for _ in range(15):
+                page.evaluate(
+                    "window.scrollBy(0, document.body.scrollHeight)"
+                )
+                page.wait_for_timeout(1500)
 
-        print("Total link:", page.locator("a").count())
+                new_height = page.evaluate(
+                    "document.body.scrollHeight"
+                )
 
-        page.screenshot(
-            path="speedhome.png",
-            full_page=True
-        )
+                if new_height == last_height:
+                    break
 
-        print("Page title:", page.title())
+                last_height = new_height
 
-        print("Total link:", page.locator("a").count())
+            html = page.content()
 
-        print("Total headings:", page.locator("h1,h2,h3,h4").count())
+        except Exception as e:
+            print(e)
+            html = ""
 
-        page.screenshot(
-            path="speedhome.png",
-            full_page=True
-        )
-
-        html = page.content()
-
-        browser.close()
+        finally:
+            browser.close()
 
     return html
 
